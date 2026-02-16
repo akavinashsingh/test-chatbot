@@ -57,7 +57,12 @@ const setInputVisible = (isVisible) => {
 };
 
 const scrollToBottom = () => {
-  chatWindow.scrollTop = chatWindow.scrollHeight;
+  const lastMessage = chatWindow.lastElementChild;
+  if (lastMessage) {
+    lastMessage.scrollIntoView({ behavior: "smooth", block: "end" });
+  } else {
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
 };
 
 const createMessage = (author, text, tone) => {
@@ -84,17 +89,47 @@ const createMessage = (author, text, tone) => {
   chatWindow.appendChild(message);
   scrollToBottom();
 
-  return { message, content };
+  return { message, content, bubble };
 };
 
-const addBotMessage = (text) => createMessage("GroomBot", text, "bot");
+const createTypingDots = () => {
+  const dots = document.createElement("span");
+  dots.className = "typing-dots";
+  for (let i = 0; i < 3; i += 1) {
+    const dot = document.createElement("span");
+    dots.appendChild(dot);
+  }
+  return dots;
+};
+
+const addBotMessage = (text, options = {}) => {
+  const { actions = [], extraContent = null, typing = true } = options;
+  const { content, bubble } = createMessage("GroomBot", "", "bot");
+
+  const finalize = () => {
+    bubble.textContent = text;
+    if (extraContent) {
+      content.appendChild(extraContent);
+    }
+    addActions(content, actions);
+  };
+
+  if (typing) {
+    bubble.textContent = "";
+    bubble.appendChild(createTypingDots());
+    setTimeout(finalize, 550);
+  } else {
+    finalize();
+  }
+};
 const addUserMessage = (text) => createMessage("You", text, "user");
 
 const addActions = (messageContent, actions) => {
-  if (!actions.length) return;
+  const filtered = actions.filter(Boolean);
+  if (!filtered.length) return;
   const wrapper = document.createElement("div");
   wrapper.className = "message__actions fade-in";
-  actions.forEach((action) => wrapper.appendChild(action));
+  filtered.forEach((action) => wrapper.appendChild(action));
   messageContent.appendChild(wrapper);
   scrollToBottom();
 };
@@ -114,6 +149,16 @@ const createBackButton = () =>
 const createStartOverButton = () =>
   createButton("Start Over", () => resetFlow(), "action-btn action-btn--ghost");
 
+const createBookAnotherButton = () =>
+  createButton(
+    "Book Another Service",
+    () => resetFlow("Let us book another service."),
+    "action-btn action-btn--primary"
+  );
+
+const createViewBookingsButton = () =>
+  createButton("View My Bookings", () => showBookingsList(), "action-btn");
+
 const pushHistory = (step) => {
   historyStack.push({ step, data: { ...state } });
 };
@@ -127,7 +172,7 @@ const goBack = () => {
   renderStep();
 };
 
-const resetFlow = () => {
+const resetFlow = (message = "No problem. Let us start over.") => {
   historyStack.length = 0;
   Object.assign(state, {
     service: null,
@@ -140,8 +185,81 @@ const resetFlow = () => {
     time: "",
   });
   currentStep = "service";
-  addBotMessage("No problem. Let us start over.");
+  if (message) {
+    addBotMessage(message);
+  }
   renderStep();
+};
+
+const buildSummaryCard = (booking) => {
+  const summary = document.createElement("div");
+  summary.className = "summary-card";
+
+  const petIcon = booking.petType === "Cat" ? "🐱" : "🐶";
+  const rows = [
+    [petIcon, "Pet", booking.petName || booking.petType],
+    ["✂️", "Service", booking.service],
+    ["📅", "Date", new Date(booking.date).toDateString()],
+    ["⏰", "Time", booking.time],
+    ["💳", "Price", booking.packagePrice],
+  ];
+
+  rows.forEach(([icon, label, value]) => {
+    const row = document.createElement("div");
+    row.className = "summary-row";
+
+    const key = document.createElement("span");
+    key.className = "summary-key";
+    const iconSpan = document.createElement("span");
+    iconSpan.className = "summary-icon";
+    iconSpan.textContent = icon;
+    const labelSpan = document.createElement("span");
+    labelSpan.textContent = label;
+    key.append(iconSpan, labelSpan);
+
+    const val = document.createElement("strong");
+    val.textContent = value;
+    row.append(key, val);
+    summary.appendChild(row);
+  });
+
+  return summary;
+};
+
+const showBookingsList = () => {
+  setInputVisible(false);
+  const bookings = loadBookings();
+  const today = getTodayIso();
+  const upcoming = bookings.filter((booking) => booking.date >= today);
+
+  if (!upcoming.length) {
+    addBotMessage("You have no upcoming appointments yet.", {
+      actions: [createBookAnotherButton()],
+    });
+    return;
+  }
+
+  const list = document.createElement("div");
+  list.className = "summary-card";
+  upcoming.forEach((booking) => {
+    const card = buildSummaryCard(booking);
+    card.classList.add("summary-card--compact");
+    list.appendChild(card);
+  });
+
+  addBotMessage("Here are your upcoming appointments.", {
+    extraContent: list,
+    actions: [createBookAnotherButton()],
+  });
+};
+
+const showBookingDetail = (booking) => {
+  setInputVisible(false);
+  const card = buildSummaryCard(booking);
+  addBotMessage("Here is your booking.", {
+    extraContent: card,
+    actions: [createBookAnotherButton(), createViewBookingsButton()],
+  });
 };
 
 const renderStep = () => {
@@ -177,16 +295,14 @@ const renderStep = () => {
 
 const showServiceOptions = () => {
   setInputVisible(false);
-  const { content } = addBotMessage(
-    "Welcome! What service would you like to book today?"
-  );
-
   const services = ["Grooming", "Walking", "Training", "Boarding"];
   const buttons = services.map((service) =>
     createButton(service, () => handleServiceSelect(service))
   );
 
-  addActions(content, [...buttons, createStartOverButton()]);
+  addBotMessage("Welcome! What service would you like to book today?", {
+    actions: [...buttons, createViewBookingsButton(), createStartOverButton()],
+  });
 };
 
 const handleServiceSelect = (service) => {
@@ -210,19 +326,21 @@ const askPetName = () => {
   setInputVisible(true);
   messageInput.value = state.petName;
   messageInput.placeholder = "Enter your pet's name";
-  const { content } = addBotMessage("Great! What is your pet's name?");
-  addActions(content, [createBackButton(), createStartOverButton()]);
+  addBotMessage("Great! What is your pet's name?", {
+    actions: [createBackButton(), createStartOverButton()],
+  });
 };
 
 const askPetType = () => {
   setInputVisible(false);
-  const { content } = addBotMessage("Is your pet a dog or a cat?");
-  addActions(content, [
-    createButton("Dog", () => setPetType("Dog")),
-    createButton("Cat", () => setPetType("Cat")),
-    createBackButton(),
-    createStartOverButton(),
-  ]);
+  addBotMessage("Is your pet a dog or a cat?", {
+    actions: [
+      createButton("Dog", () => setPetType("Dog")),
+      createButton("Cat", () => setPetType("Cat")),
+      createBackButton(),
+      createStartOverButton(),
+    ],
+  });
 };
 
 const setPetType = (value) => {
@@ -235,14 +353,15 @@ const setPetType = (value) => {
 
 const askPetSize = () => {
   setInputVisible(false);
-  const { content } = addBotMessage("What size is your pet?");
-  addActions(content, [
-    createButton("Small", () => setPetSize("Small")),
-    createButton("Medium", () => setPetSize("Medium")),
-    createButton("Large", () => setPetSize("Large")),
-    createBackButton(),
-    createStartOverButton(),
-  ]);
+  addBotMessage("What size is your pet?", {
+    actions: [
+      createButton("Small", () => setPetSize("Small")),
+      createButton("Medium", () => setPetSize("Medium")),
+      createButton("Large", () => setPetSize("Large")),
+      createBackButton(),
+      createStartOverButton(),
+    ],
+  });
 };
 
 const setPetSize = (value) => {
@@ -255,8 +374,6 @@ const setPetSize = (value) => {
 
 const askPackage = () => {
   setInputVisible(false);
-  const { content } = addBotMessage("Pick a grooming package.");
-
   const packages = [
     { name: "Fresh & Fluffy", price: "$45" },
     { name: "Spa Deluxe", price: "$65" },
@@ -273,7 +390,7 @@ const askPackage = () => {
   });
 
   packageButtons.push(createBackButton(), createStartOverButton());
-  addActions(content, packageButtons);
+  addBotMessage("Pick a grooming package.", { actions: packageButtons });
 };
 
 const setPackage = (item) => {
@@ -287,8 +404,6 @@ const setPackage = (item) => {
 
 const askDate = () => {
   setInputVisible(false);
-  const { content } = addBotMessage("Choose a preferred date.");
-
   const dateInput = document.createElement("input");
   dateInput.type = "date";
   dateInput.className = "date-picker";
@@ -316,24 +431,25 @@ const askDate = () => {
     renderStep();
   }, "action-btn action-btn--primary");
 
-  addActions(content, [
-    dateInput,
-    helperText,
-    continueButton,
-    createBackButton(),
-    createStartOverButton(),
-  ]);
+  addBotMessage("Choose a preferred date.", {
+    actions: [
+      dateInput,
+      helperText,
+      continueButton,
+      createBackButton(),
+      createStartOverButton(),
+    ],
+  });
 };
 
 const askTime = () => {
   setInputVisible(false);
-  const { content } = addBotMessage("Select a time slot.");
   const times = ["9:00 AM", "11:30 AM", "2:00 PM", "4:30 PM"];
   const timeButtons = times.map((time) =>
     createButton(time, () => setTime(time))
   );
   timeButtons.push(createBackButton(), createStartOverButton());
-  addActions(content, timeButtons);
+  addBotMessage("Select a time slot.", { actions: timeButtons });
 };
 
 const setTime = (value) => {
@@ -346,52 +462,40 @@ const setTime = (value) => {
 
 const showSummary = () => {
   setInputVisible(false);
-  const { content } = addBotMessage("Here is your booking summary.");
-
-  const summary = document.createElement("div");
-  summary.className = "summary-card";
-  const rows = [
-    ["Service", state.service],
-    ["Pet Name", state.petName],
-    ["Pet Type", state.petType],
-    ["Size", state.petSize],
-    ["Package", `${state.packageName} (${state.packagePrice})`],
-    ["Date", new Date(state.date).toDateString()],
-    ["Time", state.time],
-  ];
-
-  rows.forEach(([label, value]) => {
-    const row = document.createElement("div");
-    row.className = "summary-row";
-    const key = document.createElement("span");
-    key.textContent = label;
-    const val = document.createElement("strong");
-    val.textContent = value;
-    row.append(key, val);
-    summary.appendChild(row);
-  });
-
-  content.appendChild(summary);
-
   const confirmButton = createButton(
     "Confirm Booking",
     () => confirmBooking(),
     "action-btn action-btn--primary"
   );
 
-  addActions(content, [confirmButton, createBackButton(), createStartOverButton()]);
+  const summary = buildSummaryCard({
+    ...state,
+    service: state.service,
+  });
+
+  addBotMessage("Here is your booking summary.", {
+    extraContent: summary,
+    actions: [confirmButton, createBackButton(), createStartOverButton()],
+  });
 };
 
 const confirmBooking = () => {
   addUserMessage("Confirm Booking");
   const bookingNumber = `GB-${Math.floor(100000 + Math.random() * 900000)}`;
-  saveBooking({
+  const booking = {
     bookingNumber,
     ...state,
     createdAt: new Date().toISOString(),
-  });
+  };
+  saveBooking(booking);
   addBotMessage(
-    `All set! Your booking is confirmed. Booking number: ${bookingNumber}.`
+    `All set! Your booking is confirmed. Booking number: ${bookingNumber}.`,
+    {
+      actions: [
+        createButton("View Booking", () => showBookingDetail(booking)),
+        createBookAnotherButton(),
+      ],
+    }
   );
   currentStep = "service";
   historyStack.length = 0;
@@ -405,9 +509,6 @@ const confirmBooking = () => {
     date: "",
     time: "",
   });
-  setTimeout(() => {
-    renderStep();
-  }, 400);
 };
 
 chatForm.addEventListener("submit", (event) => {
