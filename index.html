@@ -3,10 +3,60 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Pet Chatbot Lab</title>
+    <title>Pet Grooming Chatbot</title>
     <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"
+    />
   </head>
   <body>
-    <h1>Pet Chatbot Lab</h1>
+    <div class="app">
+      <header class="app__header">
+        <div>
+          <p class="app__eyebrow">Pet Grooming Assistant</p>
+          <h1>Fresh Fur, Friendly Chat</h1>
+          <p class="app__subtitle">
+            Ask anything about baths, brushing, nail trims, and spa-day prep.
+          </p>
+        </div>
+      </header>
+
+      <main class="chat">
+        <section class="chat__window" id="chatWindow" aria-live="polite">
+          <article class="message message--bot">
+            <span class="message__avatar" aria-hidden="true">🐾</span>
+            <div>
+              <p class="message__name">GroomBot</p>
+              <p class="message__bubble">
+                Hi! Tell me your pet type and I can share grooming tips.
+              </p>
+            </div>
+          </article>
+          <article class="message message--user">
+            <span class="message__avatar" aria-hidden="true">👤</span>
+            <div>
+              <p class="message__name">You</p>
+              <p class="message__bubble">How often should I brush a golden retriever?</p>
+            </div>
+          </article>
+        </section>
+
+        <form class="chat__input" id="chatForm">
+          <label class="sr-only" for="messageInput">Message</label>
+          <input
+            id="messageInput"
+            name="message"
+            type="text"
+            placeholder="Type your grooming question..."
+            autocomplete="off"
+            required
+          />
+          <button type="submit">Send</button>
+        </form>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
   </body>
 </html>

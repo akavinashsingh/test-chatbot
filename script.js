@@ -1,36 +1,43 @@
 const chatWindow = document.getElementById("chatWindow");
 const chatForm = document.getElementById("chatForm");
 const messageInput = document.getElementById("messageInput");
-const promptChips = document.getElementById("promptChips");
 
 const cannedReplies = [
-  "Make sure fresh water is always available, and introduce new food gradually.",
-  "Positive reinforcement works best. Short sessions and treats help a lot.",
-  "If you notice lethargy or loss of appetite, consult a vet promptly.",
-  "For most pets, a consistent routine keeps stress levels down.",
-  "Grooming schedules vary, but weekly brushing is a good baseline.",
+  "Golden retrievers do best with brushing 3-4 times a week to reduce shedding.",
+  "For short coats, a rubber curry brush once a week keeps them shiny.",
+  "Trim nails every 3-4 weeks, or when you hear clicking on hard floors.",
+  "Baths every 4-6 weeks are typical, unless your pet gets extra muddy.",
+  "Use a slicker brush for tangles, then finish with a comb for smoothness.",
 ];
 
 const addMessage = (author, text, tone = "bot") => {
-  const message = document.createElement("div");
-  message.className = `message message--${tone}`;
+  const message = document.createElement("article");
+  message.className = `message message--${tone} message--new`;
 
-  const meta = document.createElement("div");
-  meta.className = "message__meta";
-  meta.textContent = author;
+  const avatar = document.createElement("span");
+  avatar.className = "message__avatar";
+  avatar.setAttribute("aria-hidden", "true");
+  avatar.textContent = tone === "user" ? "👤" : "🐾";
 
-  const bubble = document.createElement("div");
+  const content = document.createElement("div");
+
+  const name = document.createElement("p");
+  name.className = "message__name";
+  name.textContent = author;
+
+  const bubble = document.createElement("p");
   bubble.className = "message__bubble";
   bubble.textContent = text;
 
-  message.append(meta, bubble);
+  content.append(name, bubble);
+  message.append(avatar, content);
   chatWindow.appendChild(message);
   chatWindow.scrollTop = chatWindow.scrollHeight;
 };
 
 const mockBotReply = () => {
   const pick = cannedReplies[Math.floor(Math.random() * cannedReplies.length)];
-  setTimeout(() => addMessage("PetBot", pick, "bot"), 450);
+  setTimeout(() => addMessage("GroomBot", pick, "bot"), 450);
 };
 
 chatForm.addEventListener("submit", (event) => {
@@ -41,11 +48,4 @@ chatForm.addEventListener("submit", (event) => {
   addMessage("You", text, "user");
   messageInput.value = "";
   mockBotReply();
-});
-
-promptChips.addEventListener("click", (event) => {
-  if (event.target.matches(".chip")) {
-    messageInput.value = event.target.textContent;
-    messageInput.focus();
-  }
 });
