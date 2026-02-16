@@ -122,6 +122,83 @@ body {
   background: var(--sky-100);
 }
 
+.message__actions {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.action-btn {
+  border: none;
+  background: var(--sky-200);
+  color: var(--ink);
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(47, 94, 188, 0.2);
+}
+
+.action-btn--primary {
+  background: var(--sky-700);
+  color: var(--white);
+}
+
+.action-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--sky-300);
+}
+
+.action-card {
+  border: 1px solid var(--sky-200);
+  background: var(--white);
+  padding: 12px 14px;
+  border-radius: 16px;
+  min-width: 180px;
+  text-align: left;
+  box-shadow: 0 10px 18px rgba(9, 30, 66, 0.08);
+}
+
+.action-card span {
+  display: block;
+  font-size: 12px;
+  color: rgba(11, 26, 51, 0.6);
+  margin-top: 4px;
+}
+
+.date-picker {
+  border: 1px solid var(--sky-200);
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--white);
+}
+
+.summary-card {
+  background: var(--sky-100);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.summary-row strong {
+  font-weight: 600;
+}
+
 .message--user {
   align-self: flex-end;
   flex-direction: row-reverse;
@@ -142,6 +219,10 @@ body {
   animation: popIn 0.35s ease;
 }
 
+.fade-in {
+  animation: fadeIn 0.35s ease;
+}
+
 .chat__input {
   display: flex;
   gap: 12px;
@@ -149,6 +230,10 @@ body {
   padding: 12px;
   border-radius: 18px;
   background: var(--sky-100);
+}
+
+.chat__input--hidden {
+  display: none;
 }
 
 .chat__input input {
@@ -213,6 +298,17 @@ body {
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 700px) {
   .app {
     padding: 20px 16px 28px;
@@ -236,6 +332,15 @@ body {
   }
 
   .chat__input button {
+    width: 100%;
+  }
+
+  .message__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-card {
     width: 100%;
   }
 }
