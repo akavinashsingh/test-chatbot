@@ -420,3 +420,49 @@ body {
     width: 100%;
   }
 }
+
+@media (max-width: 480px) {
+  .app {
+    padding: 16px 14px 24px;
+  }
+
+  .app__header {
+    padding: 20px;
+  }
+
+  .app__header h1 {
+    font-size: 24px;
+  }
+
+  .app__subtitle {
+    font-size: 14px;
+  }
+
+  .message {
+    gap: 8px;
+  }
+
+  .message__avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+
+  .message__bubble {
+    font-size: 14px;
+  }
+
+  .chat__input {
+    padding: 10px;
+  }
+
+  .chat__input input {
+    font-size: 15px;
+  }
+
+  .summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
