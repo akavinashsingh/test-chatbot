@@ -2,6 +2,14 @@ const chatWindow = document.getElementById("chatWindow");
 const chatForm = document.getElementById("chatForm");
 const messageInput = document.getElementById("messageInput");
 
+const STORAGE_KEY = "petChatbotBookings";
+const unavailableDates = [
+  "2026-02-20",
+  "2026-02-22",
+  "2026-02-28",
+  "2026-03-01",
+];
+
 const state = {
   service: null,
   petName: "",
@@ -15,6 +23,30 @@ const state = {
 
 const historyStack = [];
 let currentStep = "service";
+
+const getTodayIso = () => {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const loadBookings = () => {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+};
+
+const saveBooking = (booking) => {
+  const bookings = loadBookings();
+  bookings.push(booking);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+};
 
 const setInputVisible = (isVisible) => {
   chatForm.classList.toggle("chat__input--hidden", !isVisible);
@@ -79,6 +111,9 @@ const createButton = (label, onClick, className = "action-btn") => {
 const createBackButton = () =>
   createButton("Go Back", () => goBack(), "action-btn action-btn--ghost");
 
+const createStartOverButton = () =>
+  createButton("Start Over", () => resetFlow(), "action-btn action-btn--ghost");
+
 const pushHistory = (step) => {
   historyStack.push({ step, data: { ...state } });
 };
@@ -89,6 +124,23 @@ const goBack = () => {
   Object.assign(state, previous.data);
   currentStep = previous.step;
   addBotMessage("Okay, going back a step.");
+  renderStep();
+};
+
+const resetFlow = () => {
+  historyStack.length = 0;
+  Object.assign(state, {
+    service: null,
+    petName: "",
+    petType: "",
+    petSize: "",
+    packageName: "",
+    packagePrice: "",
+    date: "",
+    time: "",
+  });
+  currentStep = "service";
+  addBotMessage("No problem. Let us start over.");
   renderStep();
 };
 
@@ -134,7 +186,7 @@ const showServiceOptions = () => {
     createButton(service, () => handleServiceSelect(service))
   );
 
-  addActions(content, buttons);
+  addActions(content, [...buttons, createStartOverButton()]);
 };
 
 const handleServiceSelect = (service) => {
@@ -159,7 +211,7 @@ const askPetName = () => {
   messageInput.value = state.petName;
   messageInput.placeholder = "Enter your pet's name";
   const { content } = addBotMessage("Great! What is your pet's name?");
-  addActions(content, [createBackButton()]);
+  addActions(content, [createBackButton(), createStartOverButton()]);
 };
 
 const askPetType = () => {
@@ -169,6 +221,7 @@ const askPetType = () => {
     createButton("Dog", () => setPetType("Dog")),
     createButton("Cat", () => setPetType("Cat")),
     createBackButton(),
+    createStartOverButton(),
   ]);
 };
 
@@ -188,6 +241,7 @@ const askPetSize = () => {
     createButton("Medium", () => setPetSize("Medium")),
     createButton("Large", () => setPetSize("Large")),
     createBackButton(),
+    createStartOverButton(),
   ]);
 };
 
@@ -218,7 +272,7 @@ const askPackage = () => {
     return button;
   });
 
-  packageButtons.push(createBackButton());
+  packageButtons.push(createBackButton(), createStartOverButton());
   addActions(content, packageButtons);
 };
 
@@ -239,10 +293,20 @@ const askDate = () => {
   dateInput.type = "date";
   dateInput.className = "date-picker";
   dateInput.value = state.date;
+  dateInput.min = getTodayIso();
+
+  const helperText = document.createElement("p");
+  helperText.className = "helper-text";
+  helperText.textContent =
+    "Unavailable dates: Feb 20, Feb 22, Feb 28, Mar 1.";
 
   const continueButton = createButton("Continue", () => {
     if (!dateInput.value) {
       addBotMessage("Please pick a date to continue.");
+      return;
+    }
+    if (unavailableDates.includes(dateInput.value)) {
+      addBotMessage("That date is unavailable. Please choose another.");
       return;
     }
     state.date = dateInput.value;
@@ -252,7 +316,13 @@ const askDate = () => {
     renderStep();
   }, "action-btn action-btn--primary");
 
-  addActions(content, [dateInput, continueButton, createBackButton()]);
+  addActions(content, [
+    dateInput,
+    helperText,
+    continueButton,
+    createBackButton(),
+    createStartOverButton(),
+  ]);
 };
 
 const askTime = () => {
@@ -262,7 +332,7 @@ const askTime = () => {
   const timeButtons = times.map((time) =>
     createButton(time, () => setTime(time))
   );
-  timeButtons.push(createBackButton());
+  timeButtons.push(createBackButton(), createStartOverButton());
   addActions(content, timeButtons);
 };
 
@@ -309,12 +379,17 @@ const showSummary = () => {
     "action-btn action-btn--primary"
   );
 
-  addActions(content, [confirmButton, createBackButton()]);
+  addActions(content, [confirmButton, createBackButton(), createStartOverButton()]);
 };
 
 const confirmBooking = () => {
   addUserMessage("Confirm Booking");
   const bookingNumber = `GB-${Math.floor(100000 + Math.random() * 900000)}`;
+  saveBooking({
+    bookingNumber,
+    ...state,
+    createdAt: new Date().toISOString(),
+  });
   addBotMessage(
     `All set! Your booking is confirmed. Booking number: ${bookingNumber}.`
   );
