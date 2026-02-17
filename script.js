@@ -59,10 +59,18 @@ const setInputVisible = (isVisible) => {
 const scrollToBottom = () => {
   const lastMessage = chatWindow.lastElementChild;
   if (lastMessage) {
-    lastMessage.scrollIntoView({ behavior: "smooth", block: "end" });
+    const actions = lastMessage.querySelector(".message__actions");
+    if (actions) {
+      actions.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else {
+      lastMessage.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
   } else {
     chatWindow.scrollTop = chatWindow.scrollHeight;
   }
+  setTimeout(() => {
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }, 600);
 };
 
 const createMessage = (author, text, tone) => {
