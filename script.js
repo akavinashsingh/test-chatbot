@@ -6,6 +6,8 @@ const chatContainer = document.getElementById("chatContainer");
 const minimizeBtn = document.getElementById("minimizeBtn");
 const closeBtn = document.getElementById("closeBtn");
 const chatOverlay = document.getElementById("chatOverlay");
+const backBtn = document.getElementById("backBtn");
+const badgeElement = document.querySelector(".chat-widget__badge");
 
 const STORAGE_KEY = "petChatbotBookings";
 const unavailableDates = [
@@ -17,10 +19,21 @@ const unavailableDates = [
 
 // Widget state
 let isWidgetOpen = false;
+let unreadCount = 0;
+
+// Update badge display
+const updateBadge = () => {
+  if (badgeElement) {
+    badgeElement.textContent = unreadCount;
+    badgeElement.style.display = unreadCount > 0 ? "flex" : "none";
+  }
+};
 
 // Widget control functions
 const openWidget = () => {
   isWidgetOpen = true;
+  unreadCount = 0;
+  updateBadge();
   chatButton.classList.add("hidden");
   chatContainer.classList.add("open");
   chatOverlay.classList.add("active");
@@ -42,6 +55,7 @@ const minimizeWidget = () => {
 chatButton.addEventListener("click", openWidget);
 minimizeBtn.addEventListener("click", minimizeWidget);
 closeBtn.addEventListener("click", closeWidget);
+backBtn.addEventListener("click", minimizeWidget);
 chatOverlay.addEventListener("click", closeWidget);
 
 const state = {
@@ -155,6 +169,12 @@ const addBotMessage = (text, options = {}) => {
       content.appendChild(extraContent);
     }
     addActions(content, actions);
+    
+    // Increment unread count if widget is minimized
+    if (!isWidgetOpen) {
+      unreadCount++;
+      updateBadge();
+    }
   };
 
   if (typing) {
@@ -608,9 +628,9 @@ const setBoardingFacility = (facility) => {
 const askPackage = () => {
   setInputVisible(false);
   const packages = [
-    { name: "Fresh & Fluffy", price: "$45" },
-    { name: "Spa Deluxe", price: "$65" },
-    { name: "Full Groom", price: "$85" },
+    { name: "Fresh & Fluffy", price: "₹3,500" },
+    { name: "Spa Deluxe", price: "₹5,400" },
+    { name: "Full Groom", price: "₹7,000" },
   ];
 
   const packageButtons = packages.map((item) => {
@@ -690,7 +710,7 @@ const setTime = (value) => {
   state.time = value;
   pushHistory("time");
   
-  if (state.service === "Boarding") {
+  if (state.service === "Boarding" || state.service === "Grooming") {
     currentStep = "pickupDropService";
   } else {
     currentStep = "summary";
