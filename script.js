@@ -1,6 +1,11 @@
 const chatWindow = document.getElementById("chatWindow");
 const chatForm = document.getElementById("chatForm");
 const messageInput = document.getElementById("messageInput");
+const chatButton = document.getElementById("chatButton");
+const chatContainer = document.getElementById("chatContainer");
+const minimizeBtn = document.getElementById("minimizeBtn");
+const closeBtn = document.getElementById("closeBtn");
+const chatOverlay = document.getElementById("chatOverlay");
 
 const STORAGE_KEY = "petChatbotBookings";
 const unavailableDates = [
@@ -9,6 +14,35 @@ const unavailableDates = [
   "2026-02-28",
   "2026-03-01",
 ];
+
+// Widget state
+let isWidgetOpen = false;
+
+// Widget control functions
+const openWidget = () => {
+  isWidgetOpen = true;
+  chatButton.classList.add("hidden");
+  chatContainer.classList.add("open");
+  chatOverlay.classList.add("active");
+  messageInput.focus();
+};
+
+const closeWidget = () => {
+  isWidgetOpen = false;
+  chatButton.classList.remove("hidden");
+  chatContainer.classList.remove("open");
+  chatOverlay.classList.remove("active");
+};
+
+const minimizeWidget = () => {
+  closeWidget();
+};
+
+// Event listeners for widget controls
+chatButton.addEventListener("click", openWidget);
+minimizeBtn.addEventListener("click", minimizeWidget);
+closeBtn.addEventListener("click", closeWidget);
+chatOverlay.addEventListener("click", closeWidget);
 
 const state = {
   service: null,
@@ -50,7 +84,7 @@ const saveBooking = (booking) => {
 };
 
 const setInputVisible = (isVisible) => {
-  chatForm.classList.toggle("chat__input--hidden", !isVisible);
+  chatForm.classList.toggle("chat-widget__input--hidden", !isVisible);
   messageInput.disabled = !isVisible;
   if (isVisible) {
     messageInput.focus();

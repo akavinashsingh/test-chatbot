@@ -11,33 +11,48 @@
     />
   </head>
   <body>
-    <div class="app">
-      <header class="app__header">
-        <div>
-          <p class="app__eyebrow">PetPal Booking Assistant 🐾</p>
-          <h1>Fresh Fur, Friendly Chat</h1>
-          <p class="app__subtitle">
-            Ask anything about grooming, dog walking, training, and boarding services in Mumbai.
-          </p>
+    <!-- Floating Chat Widget -->
+    <div class="chat-widget">
+      <!-- Overlay for mobile -->
+      <div class="chat-widget__overlay" id="chatOverlay"></div>
+
+      <!-- Floating Button (Initial State) -->
+      <button class="chat-widget__button" id="chatButton" aria-label="Open chat">
+        🐾
+        <span class="chat-widget__badge">1</span>
+      </button>
+
+      <!-- Chat Window -->
+      <div class="chat-widget__container" id="chatContainer">
+        <!-- Header -->
+        <div class="chat-widget__header">
+          <div class="chat-widget__header-content">
+            <span class="chat-widget__status"></span>
+            <h2 class="chat-widget__title">PetPal Assistant</h2>
+          </div>
+          <div class="chat-widget__header-actions">
+            <button class="chat-widget__minimize" id="minimizeBtn" aria-label="Minimize chat">−</button>
+            <button class="chat-widget__close" id="closeBtn" aria-label="Close chat">✕</button>
+          </div>
         </div>
-      </header>
 
-      <main class="chat">
-        <section class="chat__window" id="chatWindow" aria-live="polite"></section>
+        <!-- Chat Content -->
+        <section class="chat-widget__window" id="chatWindow" aria-live="polite"></section>
 
-        <form class="chat__input" id="chatForm">
+        <!-- Chat Input -->
+        <form class="chat-widget__input" id="chatForm">
           <label class="sr-only" for="messageInput">Message</label>
           <input
             id="messageInput"
             name="message"
             type="text"
-            placeholder="Type your grooming question..."
+            placeholder="Type your question..."
             autocomplete="off"
             required
           />
           <button type="submit">Send</button>
         </form>
-      </main>
+      </div>
     </div>
 
     <script src="script.js"></script>
