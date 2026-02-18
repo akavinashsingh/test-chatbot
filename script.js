@@ -287,6 +287,9 @@ const renderStep = () => {
     case "walkingPackage":
       askWalkingPackage();
       break;
+    case "trainingPackage":
+      askTrainingPackage();
+      break;
     case "package":
       askPackage();
       break;
@@ -320,7 +323,7 @@ const handleServiceSelect = (service) => {
   addUserMessage(service);
   state.service = service;
 
-  if (service === "Walking") {
+  if (service === "Walking" || service === "Training") {
     pushHistory("service");
     currentStep = "petName";
     renderStep();
@@ -389,6 +392,8 @@ const setPetSize = (value) => {
   
   if (state.service === "Walking") {
     currentStep = "walkingPackage";
+  } else if (state.service === "Training") {
+    currentStep = "trainingPackage";
   } else {
     currentStep = "package";
   }
@@ -433,6 +438,43 @@ const askWalkingPackage = () => {
 
   packageButtons.push(createBackButton(), createStartOverButton());
   addBotMessage("Choose your walking plan. Track walking time and days with our walker.", { actions: packageButtons });
+};
+
+const askTrainingPackage = () => {
+  setInputVisible(false);
+  const trainingPackages = [
+    { name: "Primary Training", duration: "3 months • 12 sessions", price: "₹12,000" },
+    { name: "Advance Training", duration: "6 months • 24 sessions", price: "₹24,000" },
+    { name: "Online Training Course", duration: "For Pet Parents • 30 hours", price: "₹3,500" },
+  ];
+
+  const packageButtons = trainingPackages.map((item) => {
+    const button = createButton("", () => setPackage(item), "action-btn action-card");
+    
+    const nameSpan = document.createElement("span");
+    nameSpan.style.display = "block";
+    nameSpan.textContent = item.name;
+    
+    const durationSpan = document.createElement("span");
+    durationSpan.style.display = "block";
+    durationSpan.style.fontSize = "0.85em";
+    durationSpan.style.color = "rgba(107, 114, 128, 0.8)";
+    durationSpan.textContent = item.duration;
+    
+    const priceSpan = document.createElement("span");
+    priceSpan.style.display = "block";
+    priceSpan.style.marginTop = "4px";
+    priceSpan.style.fontWeight = "bold";
+    priceSpan.style.color = "#2f5ebc";
+    priceSpan.textContent = item.price;
+    
+    button.textContent = "";
+    button.append(nameSpan, durationSpan, priceSpan);
+    return button;
+  });
+
+  packageButtons.push(createBackButton(), createStartOverButton());
+  addBotMessage("Choose your training program.", { actions: packageButtons });
 };
 
 const askPackage = () => {
