@@ -284,6 +284,9 @@ const renderStep = () => {
     case "petSize":
       askPetSize();
       break;
+    case "walkingPackage":
+      askWalkingPackage();
+      break;
     case "package":
       askPackage();
       break;
@@ -316,6 +319,13 @@ const showServiceOptions = () => {
 const handleServiceSelect = (service) => {
   addUserMessage(service);
   state.service = service;
+
+  if (service === "Walking") {
+    pushHistory("service");
+    currentStep = "petName";
+    renderStep();
+    return;
+  }
 
   if (service !== "Grooming") {
     state.service = null;
@@ -376,8 +386,53 @@ const setPetSize = (value) => {
   addUserMessage(value);
   state.petSize = value;
   pushHistory("petSize");
-  currentStep = "package";
+  
+  if (state.service === "Walking") {
+    currentStep = "walkingPackage";
+  } else {
+    currentStep = "package";
+  }
+  
   renderStep();
+};
+
+const askWalkingPackage = () => {
+  setInputVisible(false);
+  const walkingPackages = [
+    { name: "7 Days Walking", days: "7 days", price: "₹1,400" },
+    { name: "15 Days Walking", days: "15 days", price: "₹3,000" },
+    { name: "30 Days Walking", days: "30 days", price: "₹5,400" },
+    { name: "180 Days Walking", days: "180 days", price: "₹27,000" },
+    { name: "365 Days Walking", days: "365 days", price: "₹48,750" },
+  ];
+
+  const packageButtons = walkingPackages.map((item) => {
+    const button = createButton("", () => setPackage(item), "action-btn action-card");
+    
+    const nameSpan = document.createElement("span");
+    nameSpan.style.display = "block";
+    nameSpan.textContent = item.name;
+    
+    const daysSpan = document.createElement("span");
+    daysSpan.style.display = "block";
+    daysSpan.style.fontSize = "0.85em";
+    daysSpan.style.color = "rgba(107, 114, 128, 0.8)";
+    daysSpan.textContent = item.days;
+    
+    const priceSpan = document.createElement("span");
+    priceSpan.style.display = "block";
+    priceSpan.style.marginTop = "4px";
+    priceSpan.style.fontWeight = "bold";
+    priceSpan.style.color = "#2f5ebc";
+    priceSpan.textContent = item.price;
+    
+    button.textContent = "";
+    button.append(nameSpan, daysSpan, priceSpan);
+    return button;
+  });
+
+  packageButtons.push(createBackButton(), createStartOverButton());
+  addBotMessage("Choose your walking plan. Track walking time and days with our walker.", { actions: packageButtons });
 };
 
 const askPackage = () => {
