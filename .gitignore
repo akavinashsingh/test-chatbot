@@ -1,5 +1,5 @@
-# Markdown documentation files
-*.md
+# Work log and documentation files (keep these local)
+WORK_LOG_*.md
 
 # OS and IDE
 .DS_Store
