@@ -19,6 +19,7 @@ const state = {
   packagePrice: "",
   date: "",
   time: "",
+  pickupDropService: "",
 };
 
 const historyStack = [];
@@ -191,6 +192,7 @@ const resetFlow = (message = "No problem. Let us start over.") => {
     packagePrice: "",
     date: "",
     time: "",
+    pickupDropService: "",
   });
   currentStep = "service";
   if (message) {
@@ -290,6 +292,12 @@ const renderStep = () => {
     case "trainingPackage":
       askTrainingPackage();
       break;
+    case "boardingLocation":
+      askBoardingLocation();
+      break;
+    case "boardingFacility":
+      askBoardingFacility();
+      break;
     case "package":
       askPackage();
       break;
@@ -298,6 +306,9 @@ const renderStep = () => {
       break;
     case "time":
       askTime();
+      break;
+    case "pickupDropService":
+      askPickupDropService();
       break;
     case "summary":
       showSummary();
@@ -323,7 +334,7 @@ const handleServiceSelect = (service) => {
   addUserMessage(service);
   state.service = service;
 
-  if (service === "Walking" || service === "Training") {
+  if (service === "Walking" || service === "Training" || service === "Boarding") {
     pushHistory("service");
     currentStep = "petName";
     renderStep();
@@ -394,6 +405,8 @@ const setPetSize = (value) => {
     currentStep = "walkingPackage";
   } else if (state.service === "Training") {
     currentStep = "trainingPackage";
+  } else if (state.service === "Boarding") {
+    currentStep = "boardingLocation";
   } else {
     currentStep = "package";
   }
@@ -475,6 +488,87 @@ const askTrainingPackage = () => {
 
   packageButtons.push(createBackButton(), createStartOverButton());
   addBotMessage("Choose your training program.", { actions: packageButtons });
+};
+
+const askBoardingLocation = () => {
+  setInputVisible(false);
+  const mumbaiAreas = [
+    "Andheri",
+    "Bandra",
+    "Worli",
+    "Dadar",
+    "Navi Mumbai",
+    "Thane",
+    "Malad",
+    "Powai",
+    "Vile Parle",
+    "Juhu"
+  ];
+
+  const locationButtons = mumbaiAreas.map((area) =>
+    createButton(area, () => setBoardingLocation(area))
+  );
+
+  locationButtons.push(createBackButton(), createStartOverButton());
+  addBotMessage("Which area in Mumbai are you located in?", { actions: locationButtons });
+};
+
+const setBoardingLocation = (location) => {
+  addUserMessage(location);
+  state.packageName = location;
+  pushHistory("boardingLocation");
+  currentStep = "boardingFacility";
+  renderStep();
+};
+
+const askBoardingFacility = () => {
+  setInputVisible(false);
+  const boardingFacilities = [
+    { name: "Paws Haven", details: "Premium AC Villa • Daily updates", price: "₹1,200/night" },
+    { name: "Pet Paradise", details: "Spacious Rooms • 24/7 Monitoring", price: "₹1,000/night" },
+    { name: "The Bark House", details: "PlayArea Included • Expert Care", price: "₹1,400/night" },
+    { name: "Happy Tails Boarding", details: "Home-like Environment • Grooming", price: "₹1,100/night" },
+    { name: "Furry Friends Inn", details: "AC Kennels • Outdoor Play", price: "₹900/night" },
+    { name: "Pet Resort Mumbai", details: "Luxury Suite • Swimming Pool", price: "₹1,600/night" },
+  ];
+
+  const facilityButtons = boardingFacilities.map((facility) => {
+    const button = createButton("", () => setBoardingFacility(facility), "action-btn action-card");
+    
+    const nameSpan = document.createElement("span");
+    nameSpan.style.display = "block";
+    nameSpan.style.fontWeight = "600";
+    nameSpan.textContent = facility.name;
+    
+    const detailsSpan = document.createElement("span");
+    detailsSpan.style.display = "block";
+    detailsSpan.style.fontSize = "0.85em";
+    detailsSpan.style.color = "rgba(107, 114, 128, 0.8)";
+    detailsSpan.textContent = facility.details;
+    
+    const priceSpan = document.createElement("span");
+    priceSpan.style.display = "block";
+    priceSpan.style.marginTop = "4px";
+    priceSpan.style.fontWeight = "bold";
+    priceSpan.style.color = "#2f5ebc";
+    priceSpan.textContent = facility.price;
+    
+    button.textContent = "";
+    button.append(nameSpan, detailsSpan, priceSpan);
+    return button;
+  });
+
+  facilityButtons.push(createBackButton(), createStartOverButton());
+  addBotMessage("Select a Pet Boarding Facility in " + state.packageName + ".", { actions: facilityButtons });
+};
+
+const setBoardingFacility = (facility) => {
+  addUserMessage(`${facility.name} (${facility.price})`);
+  state.packageName = facility.name;
+  state.packagePrice = facility.price;
+  pushHistory("boardingFacility");
+  currentStep = "date";
+  renderStep();
 };
 
 const askPackage = () => {
@@ -561,6 +655,37 @@ const setTime = (value) => {
   addUserMessage(value);
   state.time = value;
   pushHistory("time");
+  
+  if (state.service === "Boarding") {
+    currentStep = "pickupDropService";
+  } else {
+    currentStep = "summary";
+  }
+  
+  renderStep();
+};
+
+const askPickupDropService = () => {
+  setInputVisible(false);
+  const pickupDropOptions = [
+    { label: "Pickup Only", value: "pickup_only" },
+    { label: "Drop Only", value: "drop_only" },
+    { label: "Pickup & Drop", value: "pickup_and_drop" },
+    { label: "No Service", value: "none" },
+  ];
+
+  const serviceButtons = pickupDropOptions.map((option) =>
+    createButton(option.label, () => setPickupDropService(option.value, option.label))
+  );
+
+  serviceButtons.push(createBackButton(), createStartOverButton());
+  addBotMessage("Would you like a Pickup and/or Drop service?", { actions: serviceButtons });
+};
+
+const setPickupDropService = (value, label) => {
+  addUserMessage(label);
+  state.pickupDropService = value;
+  pushHistory("pickupDropService");
   currentStep = "summary";
   renderStep();
 };
@@ -613,6 +738,7 @@ const confirmBooking = () => {
     packagePrice: "",
     date: "",
     time: "",
+    pickupDropService: "",
   });
 };
 
