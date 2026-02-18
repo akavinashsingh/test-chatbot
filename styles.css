@@ -494,6 +494,12 @@ button {
   color: var(--ink) !important;
 }
 
+.action-card--selected {
+  border-color: var(--sky-500);
+  background: linear-gradient(135deg, var(--sky-100) 0%, var(--sky-200) 100%);
+  box-shadow: 0 10px 20px rgba(47, 94, 188, 0.18);
+}
+
 .action-card span {
   display: block;
   font-size: 12px;

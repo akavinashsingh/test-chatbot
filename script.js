@@ -108,6 +108,8 @@ const state = {
   petSize: "",
   packageName: "",
   packagePrice: "",
+  groomingServices: [],
+  address: "",
   date: "",
   time: "",
   pickupDropService: "",
@@ -123,6 +125,8 @@ const getTodayIso = () => {
   const dd = String(now.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 };
+
+const formatPrice = (value) => `₹${value.toLocaleString("en-IN")}`;
 
 const loadBookings = () => {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -287,6 +291,8 @@ const resetFlow = (message = "No problem. Let us start over.") => {
     petSize: "",
     packageName: "",
     packagePrice: "",
+    groomingServices: [],
+    address: "",
     date: "",
     time: "",
     pickupDropService: "",
@@ -303,13 +309,35 @@ const buildSummaryCard = (booking) => {
   summary.className = "summary-card";
 
   const petIcon = booking.petType === "Cat" ? "🐱" : "🐶";
+  const pickupDropLabels = {
+    pickup_only: "Pickup Only (Paid add-on, extra fee applies)",
+    drop_only: "Drop Only (Paid add-on, extra fee applies)",
+    pickup_and_drop: "Pickup & Drop (Paid add-on, extra fee applies)",
+    none: "No Pickup/Drop",
+  };
   const rows = [
     [petIcon, "Pet", booking.petName || booking.petType],
     ["✂️", "Service", booking.service],
+    ["📍", "Address", booking.address || "Not provided"],
     ["📅", "Date", new Date(booking.date).toDateString()],
     ["⏰", "Time", booking.time],
     ["💳", "Price", booking.packagePrice],
   ];
+
+  if (booking.service === "Grooming") {
+    const details = (booking.groomingServices || [])
+      .map((item) => `${item.name} (${item.priceLabel || item.price})`)
+      .join(", ");
+    rows.splice(3, 0, ["🧴", "Grooming Details", details || "Custom selection"]);
+  }
+
+  if (booking.service === "Boarding") {
+    rows.push([
+      "🚗",
+      "Pickup/Drop",
+      pickupDropLabels[booking.pickupDropService] || "No Pickup/Drop",
+    ]);
+  }
 
   rows.forEach(([icon, label, value]) => {
     const row = document.createElement("div");
@@ -397,6 +425,9 @@ const renderStep = () => {
       break;
     case "package":
       askPackage();
+      break;
+    case "address":
+      askAddress();
       break;
     case "date":
       askDate();
@@ -664,29 +695,151 @@ const setBoardingFacility = (facility) => {
   state.packageName = facility.name;
   state.packagePrice = facility.price;
   pushHistory("boardingFacility");
-  currentStep = "date";
+  currentStep = "address";
   renderStep();
 };
 
 const askPackage = () => {
   setInputVisible(false);
-  const packages = [
-    { name: "Fresh & Fluffy", price: "₹3,500" },
-    { name: "Spa Deluxe", price: "₹5,400" },
-    { name: "Full Groom", price: "₹7,000" },
+  const services = [
+    {
+      id: "bath",
+      name: "Bath & Shampoo",
+      details: "Coat cleansing + blow dry",
+      priceValue: 600,
+    },
+    {
+      id: "haircut",
+      name: "Haircut & Styling",
+      details: "Breed-specific trim",
+      priceValue: 900,
+    },
+    {
+      id: "nails",
+      name: "Nail Trimming",
+      details: "Safe clip + smooth edges",
+      priceValue: 250,
+    },
+    {
+      id: "ears",
+      name: "Ear Cleaning",
+      details: "Gentle clean + odor check",
+      priceValue: 200,
+    },
+    {
+      id: "teeth",
+      name: "Teeth Cleaning",
+      details: "Fresh breath polish",
+      priceValue: 300,
+    },
+    {
+      id: "deShedding",
+      name: "De-shedding",
+      details: "Coat thinning treatment",
+      priceValue: 450,
+    },
   ];
 
-  const packageButtons = packages.map((item) => {
-    const button = createButton("", () => setPackage(item), "action-btn action-card");
-    button.textContent = item.name;
-    const price = document.createElement("span");
-    price.textContent = item.price;
-    button.appendChild(price);
+  const totalText = document.createElement("p");
+  totalText.className = "helper-text";
+
+  const updateTotal = () => {
+    const total = state.groomingServices.reduce(
+      (sum, item) => sum + item.priceValue,
+      0
+    );
+    const count = state.groomingServices.length;
+    totalText.textContent = count
+      ? `Selected ${count} service${count > 1 ? "s" : ""} • Total: ${formatPrice(total)}`
+      : "Select one or more grooming services to continue.";
+  };
+
+  const toggleService = (service, button) => {
+    const index = state.groomingServices.findIndex(
+      (item) => item.id === service.id
+    );
+    if (index >= 0) {
+      state.groomingServices.splice(index, 1);
+      button.classList.remove("action-card--selected");
+    } else {
+      state.groomingServices.push({
+        id: service.id,
+        name: service.name,
+        priceValue: service.priceValue,
+        priceLabel: formatPrice(service.priceValue),
+      });
+      button.classList.add("action-card--selected");
+    }
+    updateTotal();
+  };
+
+  const serviceButtons = services.map((service) => {
+    const button = createButton(
+      "",
+      () => toggleService(service, button),
+      "action-btn action-card"
+    );
+
+    const nameSpan = document.createElement("span");
+    nameSpan.style.display = "block";
+    nameSpan.style.fontWeight = "600";
+    nameSpan.textContent = service.name;
+
+    const detailsSpan = document.createElement("span");
+    detailsSpan.style.display = "block";
+    detailsSpan.style.fontSize = "0.85em";
+    detailsSpan.style.color = "rgba(107, 114, 128, 0.8)";
+    detailsSpan.textContent = service.details;
+
+    const priceSpan = document.createElement("span");
+    priceSpan.style.display = "block";
+    priceSpan.style.marginTop = "4px";
+    priceSpan.style.fontWeight = "bold";
+    priceSpan.style.color = "#2f5ebc";
+    priceSpan.textContent = formatPrice(service.priceValue);
+
+    button.textContent = "";
+    button.append(nameSpan, detailsSpan, priceSpan);
+
+    const isSelected = state.groomingServices.some(
+      (item) => item.id === service.id
+    );
+    if (isSelected) {
+      button.classList.add("action-card--selected");
+    }
+
     return button;
   });
 
-  packageButtons.push(createBackButton(), createStartOverButton());
-  addBotMessage("Pick a grooming package.", { actions: packageButtons });
+  const continueButton = createButton(
+    "Continue",
+    () => {
+      if (!state.groomingServices.length) {
+        addBotMessage("Please select at least one grooming service to continue.");
+        return;
+      }
+      const total = state.groomingServices.reduce(
+        (sum, item) => sum + item.priceValue,
+        0
+      );
+      state.packageName = "Custom Grooming";
+      state.packagePrice = formatPrice(total);
+      addUserMessage(`Custom Grooming (${formatPrice(total)})`);
+      pushHistory("package");
+      currentStep = "address";
+      renderStep();
+    },
+    "action-btn action-btn--primary"
+  );
+
+  updateTotal();
+  serviceButtons.push(
+    totalText,
+    continueButton,
+    createBackButton(),
+    createStartOverButton()
+  );
+  addBotMessage("Customize your grooming services.", { actions: serviceButtons });
 };
 
 const setPackage = (item) => {
@@ -694,8 +847,20 @@ const setPackage = (item) => {
   state.packageName = item.name;
   state.packagePrice = item.price;
   pushHistory("package");
-  currentStep = "date";
+  currentStep = "address";
   renderStep();
+};
+
+const askAddress = () => {
+  setInputVisible(true);
+  messageInput.value = state.address;
+  messageInput.placeholder = "Enter your address";
+  addBotMessage(
+    "Please share your address for service delivery, scheduling, and future bookings.",
+    {
+      actions: [createBackButton(), createStartOverButton()],
+    }
+  );
 };
 
 const askDate = () => {
@@ -768,8 +933,8 @@ const setTime = (value) => {
   addUserMessage(value);
   state.time = value;
   pushHistory("time");
-  
-  if (state.service === "Boarding" || state.service === "Grooming") {
+
+  if (state.service === "Boarding") {
     currentStep = "pickupDropService";
   } else {
     currentStep = "summary";
@@ -781,10 +946,10 @@ const setTime = (value) => {
 const askPickupDropService = () => {
   setInputVisible(false);
   const pickupDropOptions = [
-    { label: "Pickup Only", value: "pickup_only" },
-    { label: "Drop Only", value: "drop_only" },
-    { label: "Pickup & Drop", value: "pickup_and_drop" },
-    { label: "No Service", value: "none" },
+    { label: "Pickup Only (Paid add-on)", value: "pickup_only" },
+    { label: "Drop Only (Paid add-on)", value: "drop_only" },
+    { label: "Pickup & Drop (Paid add-on)", value: "pickup_and_drop" },
+    { label: "No Pickup/Drop", value: "none" },
   ];
 
   const serviceButtons = pickupDropOptions.map((option) =>
@@ -792,7 +957,7 @@ const askPickupDropService = () => {
   );
 
   serviceButtons.push(createBackButton(), createStartOverButton());
-  addBotMessage("Would you like a Pickup and/or Drop service?", { actions: serviceButtons });
+  addBotMessage("Pickup & Drop is an additional paid service for boarding only. Would you like to add it?", { actions: serviceButtons });
 };
 
 const setPickupDropService = (value, label) => {
@@ -849,6 +1014,8 @@ const confirmBooking = () => {
     petSize: "",
     packageName: "",
     packagePrice: "",
+    groomingServices: [],
+    address: "",
     date: "",
     time: "",
     pickupDropService: "",
@@ -859,14 +1026,25 @@ chatForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const text = messageInput.value.trim();
   if (!text) return;
-  if (currentStep !== "petName") return;
 
-  addUserMessage(text);
-  state.petName = text;
-  messageInput.value = "";
-  pushHistory("petName");
-  currentStep = "petType";
-  renderStep();
+  if (currentStep === "petName") {
+    addUserMessage(text);
+    state.petName = text;
+    messageInput.value = "";
+    pushHistory("petName");
+    currentStep = "petType";
+    renderStep();
+    return;
+  }
+
+  if (currentStep === "address") {
+    addUserMessage(text);
+    state.address = text;
+    messageInput.value = "";
+    pushHistory("address");
+    currentStep = "date";
+    renderStep();
+  }
 });
 
 renderStep();
