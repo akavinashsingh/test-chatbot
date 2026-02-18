@@ -21,6 +21,43 @@ const unavailableDates = [
 let isWidgetOpen = false;
 let unreadCount = 0;
 
+// Theme Switcher
+const THEME_STORAGE_KEY = "petChatbotTheme";
+const themeSelect = document.getElementById("themeSelect");
+
+const initializeTheme = () => {
+  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || "blue";
+  applyTheme(savedTheme);
+  themeSelect.value = savedTheme;
+};
+
+const applyTheme = (theme) => {
+  const html = document.documentElement;
+  
+  // Remove all theme classes
+  html.classList.remove("theme-pink", "theme-green");
+  
+  // Add the selected theme class (blue is default, no class needed)
+  if (theme === "pink") {
+    html.classList.add("theme-pink");
+  } else if (theme === "green") {
+    html.classList.add("theme-green");
+  }
+  
+  // Save to localStorage
+  localStorage.setItem(THEME_STORAGE_KEY, theme);
+};
+
+// Theme switcher event listener
+if (themeSelect) {
+  themeSelect.addEventListener("change", (e) => {
+    applyTheme(e.target.value);
+  });
+}
+
+// Initialize theme on page load
+initializeTheme();
+
 // Update badge display
 const updateBadge = () => {
   if (badgeElement) {

@@ -1,13 +1,51 @@
 :root {
-  --sky-100: #eff7ff;
-  --sky-200: #d9ecff;
-  --sky-300: #c3e1ff;
-  --sky-500: #69a7ff;
-  --sky-700: #2f5ebc;
-  --ink: #0b1a33;
+  /* Professional Blue Theme (Default) */
+  --primary-light: #eff7ff;
+  --primary-lighter: #d9ecff;
+  --primary-medium: #c3e1ff;
+  --primary-main: #69a7ff;
+  --primary-dark: #2f5ebc;
+  --secondary: #0b1a33;
   --white: #ffffff;
   --shadow: rgba(9, 30, 66, 0.15);
-  --green-200: #10b981;
+  --accent: #10b981;
+  
+  /* Legacy variables for compatibility */
+  --sky-100: var(--primary-light);
+  --sky-200: var(--primary-lighter);
+  --sky-300: var(--primary-medium);
+  --sky-500: var(--primary-main);
+  --sky-600: #5a95e8;
+  --sky-700: var(--primary-dark);
+  --sky-800: #1e4a8a;
+  --ink: var(--secondary);
+  --green-200: var(--accent);
+}
+
+/* Playful Pink & Purple Theme */
+html.theme-pink {
+  --primary-light: #ffe6f7;
+  --primary-lighter: #ffc4e3;
+  --primary-medium: #ff9fd5;
+  --primary-main: #ff6eb4;
+  --primary-dark: #d43e8e;
+  --secondary: #5d1e60;
+  --accent: #a855f7;
+  --sky-600: #f565a3;
+  --sky-800: #c71e5f;
+}
+
+/* Earthy Green & Brown Theme */
+html.theme-green {
+  --primary-light: #e8f5e9;
+  --primary-lighter: #c8e6c9;
+  --primary-medium: #a5d6a7;
+  --primary-main: #66bb6a;
+  --primary-dark: #2e7d32;
+  --secondary: #1b5e20;
+  --accent: #8d6e63;
+  --sky-600: #558b2f;
+  --sky-800: #1b5e20;
 }
 
 * {
@@ -16,6 +54,7 @@
 
 html {
   scroll-behavior: smooth;
+  transition: background-color 0.4s ease;
 }
 
 html,
@@ -815,7 +854,34 @@ button {
   color: var(--sky-600);
 }
 
-/* Hero Section */
+/* Theme Switcher */
+.theme-switcher {
+  display: flex;
+  align-items: center;
+}
+
+.theme-select {
+  padding: 8px 12px;
+  border: 2px solid var(--primary-main);
+  border-radius: 20px;
+  background: var(--white);
+  color: var(--secondary);
+  font-family: "Outfit", "Segoe UI", sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.theme-select:hover {
+  background: var(--primary-light);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.theme-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
 .hero {
   max-width: 1200px;
   margin: 0 auto;
@@ -1109,6 +1175,15 @@ button {
   .navbar__menu {
     gap: 1rem;
     justify-content: center;
+  }
+
+  .theme-switcher {
+    justify-content: center;
+  }
+
+  .theme-select {
+    font-size: 0.8rem;
+    padding: 6px 10px;
   }
 
   .hero {
