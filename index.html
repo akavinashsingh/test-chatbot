@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Pet Grooming Chatbot</title>
+    <title>PetPal - Premium Pet Grooming Services</title>
     <link rel="stylesheet" href="styles.css" />
     <link
       rel="stylesheet"
@@ -11,6 +11,132 @@
     />
   </head>
   <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="navbar__container">
+        <div class="navbar__logo">
+          <span>🐾</span>
+          <h1>PetPal</h1>
+        </div>
+        <ul class="navbar__menu">
+          <li><a href="#services">Services</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero__content">
+        <h1 class="hero__title">Your Pet Deserves the Best Care</h1>
+        <p class="hero__subtitle">Premium grooming, walking, training, and boarding services in Mumbai</p>
+        <button class="hero__cta" id="heroCta">Book Now</button>
+      </div>
+      <div class="hero__image">
+        <div class="hero__emoji">🐶</div>
+      </div>
+    </section>
+
+    <!-- Services Overview Section -->
+    <section class="services-overview" id="services">
+      <div class="services-overview__container">
+        <h2>Our Services</h2>
+        <p class="services-overview__subtitle">Complete pet care solutions tailored just for you</p>
+        
+        <div class="services-grid">
+          <!-- Grooming Card -->
+          <div class="service-card">
+            <div class="service-card__icon">✂️</div>
+            <h3>Grooming</h3>
+            <p>Professional grooming services from basic baths to full spa treatments for your furry friend.</p>
+            <div class="service-card__pricing">
+              <span class="price">₹3,500</span>
+              <span class="label">Starting from</span>
+            </div>
+          </div>
+
+          <!-- Walking Card -->
+          <div class="service-card">
+            <div class="service-card__icon">🚶</div>
+            <h3>Walking Services</h3>
+            <p>Daily walking schedules from 7 days to full-year plans. Keep your pet active and healthy.</p>
+            <div class="service-card__pricing">
+              <span class="price">₹1,400</span>
+              <span class="label">7-day plan</span>
+            </div>
+          </div>
+
+          <!-- Training Card -->
+          <div class="service-card">
+            <div class="service-card__icon">🎓</div>
+            <h3>Training Programs</h3>
+            <p>Expert dog training and online courses for pet parents. Build better behavior and obedience.</p>
+            <div class="service-card__pricing">
+              <span class="price">₹3,500</span>
+              <span class="label">Online course</span>
+            </div>
+          </div>
+
+          <!-- Boarding Card -->
+          <div class="service-card">
+            <div class="service-card__icon">🏠</div>
+            <h3>Pet Boarding</h3>
+            <p>Safe, comfortable boarding facilities with 24/7 care and daily updates while you're away.</p>
+            <div class="service-card__pricing">
+              <span class="price">₹900</span>
+              <span class="label">Per night</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="why-us" id="about">
+      <div class="why-us__container">
+        <h2>Why Choose PetPal?</h2>
+        <div class="why-us__grid">
+          <div class="why-us__item">
+            <div class="why-us__number">1</div>
+            <h3>Expert Care</h3>
+            <p>Trained professionals with years of experience in pet care</p>
+          </div>
+          <div class="why-us__item">
+            <div class="why-us__number">2</div>
+            <h3>24/7 Support</h3>
+            <p>Round-the-clock assistance through our AI chatbot</p>
+          </div>
+          <div class="why-us__item">
+            <div class="why-us__number">3</div>
+            <h3>All Services</h3>
+            <p>Grooming, walking, training, and boarding in one place</p>
+          </div>
+          <div class="why-us__item">
+            <div class="why-us__number">4</div>
+            <h3>Best Prices</h3>
+            <p>Competitive pricing with discounts for long-term plans</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contact">
+      <div class="contact-section__container">
+        <h2>Need Help?</h2>
+        <p>Chat with our PetPal Assistant in the corner →</p>
+        <p class="contact-section__info">📍 Available in Mumbai • 💬 Chat 24/7 • 📞 Support Available</p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer__container">
+        <p>&copy; 2026 PetPal. All rights reserved. Premium Pet Care Solutions.</p>
+      </div>
+    </footer>
+
     <!-- Floating Chat Widget -->
     <div class="chat-widget">
       <!-- Overlay for mobile -->

@@ -58,6 +58,12 @@ closeBtn.addEventListener("click", closeWidget);
 backBtn.addEventListener("click", minimizeWidget);
 chatOverlay.addEventListener("click", closeWidget);
 
+// Event listener for hero CTA button
+const heroCta = document.getElementById("heroCta");
+if (heroCta) {
+  heroCta.addEventListener("click", openWidget);
+}
+
 const state = {
   service: null,
   petName: "",
