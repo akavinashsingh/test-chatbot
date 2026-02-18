@@ -1,1 +1,16 @@
-WORK_LOG_2026-02-16.md
+# Markdown documentation files
+*.md
+
+# OS and IDE
+.DS_Store
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node modules (if using Node.js in future)
+node_modules/
+
+# Dependencies
+.env
+.env.local
