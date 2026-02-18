@@ -508,6 +508,37 @@ button {
   font-family: inherit;
   font-size: 14px;
   background: var(--white);
+  color: var(--ink);
+  width: 100%;
+  min-width: 180px;
+  box-shadow: 0 6px 14px rgba(47, 94, 188, 0.08);
+}
+
+.date-picker__wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  max-width: 240px;
+}
+
+.date-picker__placeholder {
+  position: absolute;
+  left: 12px;
+  color: rgba(11, 26, 51, 0.45);
+  font-size: 14px;
+  pointer-events: none;
+  display: none;
+}
+
+.date-picker__wrapper--filled .date-picker__placeholder {
+  opacity: 0;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .date-picker__placeholder {
+    display: block;
+  }
 }
 
 /* ============= Summary Card ============= */

@@ -706,6 +706,22 @@ const askDate = () => {
   dateInput.value = state.date;
   dateInput.min = getTodayIso();
 
+  const dateWrapper = document.createElement("div");
+  dateWrapper.className = "date-picker__wrapper";
+  const datePlaceholder = document.createElement("span");
+  datePlaceholder.className = "date-picker__placeholder";
+  datePlaceholder.textContent = "Select date";
+  dateWrapper.append(dateInput, datePlaceholder);
+
+  const updateDatePlaceholder = () => {
+    dateWrapper.classList.toggle(
+      "date-picker__wrapper--filled",
+      Boolean(dateInput.value)
+    );
+  };
+  updateDatePlaceholder();
+  dateInput.addEventListener("input", updateDatePlaceholder);
+
   const helperText = document.createElement("p");
   helperText.className = "helper-text";
   helperText.textContent =
@@ -729,7 +745,7 @@ const askDate = () => {
 
   addBotMessage("Choose a preferred date.", {
     actions: [
-      dateInput,
+      dateWrapper,
       helperText,
       continueButton,
       createBackButton(),
